@@ -21,7 +21,8 @@ model = APIExcipientModel(config).to(device).eval()
 
 # Fixed descriptors — same across calls so only SMILES changes matter
 torch.manual_seed(0)
-fixed_api_desc = torch.randn(1, config.num_descriptors)
+fixed_api_desc_1 = torch.randn(1, config.num_descriptors)
+fixed_api_desc_2 = torch.randn(1, config.num_descriptors)  # Different API descriptors
 fixed_exc_desc_same = torch.randn(1, config.num_descriptors)
 fixed_exc_desc_diff = torch.randn(1, config.num_descriptors)
 
@@ -37,12 +38,12 @@ def make_batch(api_smi, exc_smi, api_desc, exc_desc):
     }
 
 with torch.no_grad():
-    # Same excipient (SMILES + descriptors), different API SMILES
-    out_a = model(make_batch("CCO", "O", fixed_api_desc, fixed_exc_desc_same))
-    out_b = model(make_batch("c1ccccc1C(=O)O", "O", fixed_api_desc, fixed_exc_desc_same))
+    # Same excipient (SMILES + descriptors), different API SMILES + different API descriptors
+    out_a = model(make_batch("CCO", "O", fixed_api_desc_1, fixed_exc_desc_same))
+    out_b = model(make_batch("c1ccccc1C(=O)O", "O", fixed_api_desc_2, fixed_exc_desc_same))
 
     # Same API SMILES, different excipient (SMILES + descriptors)
-    out_c = model(make_batch("CCO", "CC(=O)O", fixed_api_desc, fixed_exc_desc_diff))
+    out_c = model(make_batch("CCO", "CC(=O)O", fixed_api_desc_1, fixed_exc_desc_diff))
 
 print(f"out_a = {out_a.item():.8f}")
 print(f"out_b = {out_b.item():.8f}  (different API, same excipient)")
